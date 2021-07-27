@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
+import { useState } from 'react';
 import {
   sanityClient,
   urlFor,
@@ -24,17 +25,39 @@ const recipeQuery = `*[_type == "recipe" && slug.current == $slug][0]{
   likes
 }`;
 
-export default function OneRecipe({ data }) {
-  const { recipe } = data;
+export default function OneRecipe({ data, preview }) {
+
+  const { data: recipe } = usePreviewSubcription(recipeQuery, {
+    params: { slug: data.recipe?.slug.current },
+    initialData: data.recipe,
+    enabled: preview,
+  })
+  const [likes, setLikes] = useState(data?.recipe?.likes);
+
+  const addLike = async () => {
+    const res = await fetch('/api/handle-like', {
+      method: 'POST',
+      body: JSON.stringify({ _id: recipe._id }),
+    }).catch((error) => console.log(error));
+
+    const data = await res.json();
+
+    setLikes(data.likes);
+  };
+
   return (
-    <article className='recipe'>
+    <article className="recipe">
       <h1>{recipe.name}</h1>
-      <main className='content'>
+      <button className="like-button" onClick={addLike}>
+        {' '}
+        {likes} heart
+      </button>
+      <main className="content">
         <img src={urlFor(recipe?.mainImage).url()} alt={recipe.name} />
-        <div className='breakdown'>
-          <ul className='ingredients'>
+        <div className="breakdown">
+          <ul className="ingredients">
             {recipe.ingredient?.map((ingredient) => (
-              <li key={ingredient._key} className='ingredient'>
+              <li key={ingredient._key} className="ingredient">
                 {ingredient?.wholeNumber}
                 {''}
                 {ingredient?.fraction}
@@ -45,7 +68,10 @@ export default function OneRecipe({ data }) {
               </li>
             ))}
           </ul>
-          <PortableText blocks={recipe?.instructions} className='instructions' />
+          <PortableText
+            blocks={recipe?.instructions}
+            className="instructions"
+          />
         </div>
       </main>
     </article>
