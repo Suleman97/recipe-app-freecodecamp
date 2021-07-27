@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { sanityClient, urlFor } from '../lib/sanity'
 
-const recipesQuery = `*[_type == 'recipe']{
+const recipesQuery = `*[_type == "recipe"]{
   _id,
   name,
   slug,
@@ -24,11 +24,11 @@ export default function Home({ recipes }) {
       </Head>
       <h1>Wellcome to Suleman&apos;s Kitchen</h1>
 
-      <ul>
+      <ul className="recipes-list">
         {recipes?.length > 0
-          && recipes.map((recipe, index) => (
-            <li key={index}>
-              <Link href='/'>
+          && recipes.map((recipe) => (
+            <li key={recipe._id} className='recipe-card'>
+              <Link href={`/recipes/${recipe.slug.current}`}>
                 <a>
                   <img src={urlFor(recipe.mainImage).url()} alt='reciepeImage' />
                   <span>{recipe.name}</span>
